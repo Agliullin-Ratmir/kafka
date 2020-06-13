@@ -15,21 +15,22 @@ public class ProducerClass {
         return new KafkaProducer<>(props);
     }
 
-    private static void sendMessage(String key, String message) throws Exception {
+    private static void sendMessageInTopic(String message, String key, String topicName) throws Exception {
         final Producer<String, String> producer = createProducer();
 
         try {
-                final ProducerRecord<String, String> record =
-                        new ProducerRecord<String, String>(Constants.TOPIC, key, message);
-                RecordMetadata metadata = producer.send(record).get();
-                System.out.printf("sent record(key=%s, value = %s), meta (partition=%s, offset=%s)\n",
-                        record.key(), record.value(), metadata.partition(), metadata.offset());
+            final ProducerRecord<String, String> record =
+                    new ProducerRecord<String, String>(topicName, key, message);
+            RecordMetadata metadata = producer.send(record).get();
+            System.out.printf("sent record(key=%s, value = %s), meta (partition=%s, offset=%s)\n",
+                    record.key(), record.value(), metadata.partition(), metadata.offset());
 
         } finally {
             producer.flush();
             producer.close();
         }
     }
+
 
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
@@ -39,14 +40,16 @@ public class ProducerClass {
             while (!Constants.EXIT_WORD.equals(message)) {
                 System.out.println("Please, choose a mode: bc for broadcast, pv for private!");
                 mode = scanner.next();
+                System.out.println("Please, put your name!");
+                String login = scanner.next();
                 System.out.println("Please, put your message!");
                 message = scanner.next();
                 if (Constants.BROADCAST_MODE.equals(mode)) {
-                    sendMessage(Constants.BROADCAST_MODE, message);
+                    sendMessageInTopic(message, login, Constants.TOPIC);
                 } else {
                     System.out.println("Please, put a consumer's name!");
                     String name = scanner.next();
-                    sendMessage(Constants.PRIVATE_MODE + "-" + name, message);
+                    sendMessageInTopic(message, login, name);
                 }
             }
         } catch (Exception e) {
