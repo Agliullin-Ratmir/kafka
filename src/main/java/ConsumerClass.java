@@ -7,19 +7,14 @@ import java.util.Scanner;
 
 public class ConsumerClass {
 
-    private final static String TOPIC = "test";
-    private final static String BOOTSTRAP_SERVERS = "localhost:9092";
-    private final static String BROADCAST_MODE = "bc";
-    private final static String PRIVATE_MODE = "pv";
-
     private static Consumer<String, String> createConsumer() {
         Properties props = new Properties();
-        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, BOOTSTRAP_SERVERS);
+        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, Constants.BOOTSTRAP_SERVERS);
         props.put(ConsumerConfig.GROUP_ID_CONFIG, "Consumer");
         props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
         props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
         final Consumer<String, String> consumer = new KafkaConsumer<>(props);
-        consumer.subscribe(Collections.singletonList(TOPIC));
+        consumer.subscribe(Collections.singletonList(Constants.TOPIC));
         return consumer;
     }
 
@@ -36,7 +31,7 @@ public class ConsumerClass {
                     System.out.println("The consuming is finishing");
                     continue;
                 }
-                if (BROADCAST_MODE.equals(record.key()) || isConsumerForPrivateMode(String.valueOf(record.key()), name)) {
+                if (Constants.BROADCAST_MODE.equals(record.key()) || isConsumerForPrivateMode(String.valueOf(record.key()), name)) {
                     consumer.commitAsync();
                     System.out.printf("Consumer record: (%s, %s, %s, %s)\n",
                             record.key(), record.value(), record.partition(), record.offset());
@@ -48,7 +43,7 @@ public class ConsumerClass {
     private static boolean isConsumerForPrivateMode(String key, String name) {
         String mode = key.split("-")[0];
         String consumerName = key.split("-")[1];
-        if (PRIVATE_MODE.equals(mode) && name.equals(consumerName)) {
+        if (Constants.PRIVATE_MODE.equals(mode) && name.equals(consumerName)) {
             return true;
         }
         return false;
